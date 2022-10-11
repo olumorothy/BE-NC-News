@@ -109,3 +109,67 @@ describe("3. GET /api/users", () => {
       });
   });
 });
+
+describe("4. PATCH /api/articles/:article_id", () => {
+  test("status 200, updates article by id and accepts a newVote value ", () => {
+    const id = 1;
+    const updateArticle = { inc_votes: -3 };
+
+    return request(app)
+      .patch(`/api/articles/${id}`)
+      .send(updateArticle)
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.articles).toEqual({
+          article_id: 1,
+          title: "Living in the shadow of a great man",
+          topic: "mitch",
+          author: "butter_bridge",
+          body: "I find this existence challenging",
+          created_at: "2020-07-09T20:11:00.000Z",
+          votes: 97,
+        });
+        expect(body.articles.votes).toBe(97);
+      });
+  });
+  test("status:404, bad request if id is valid but not found", () => {
+    const updateArticle = { inc_votes: 7 };
+    return request(app)
+      .patch("/api/articles/700")
+      .send(updateArticle)
+      .expect(404)
+      .then((response) => {
+        expect(response.body.message).toBe("Not found!");
+      });
+  });
+  test("status: 400, bad request if an empty object is sent ", () => {
+    const updateArticle = {};
+    return request(app)
+      .patch(`/api/articles/1`)
+      .send(updateArticle)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.message).toBe("Bad request,no value to update");
+      });
+  });
+  test("status: 400, bad request does not contain valid inc_votes data type", () => {
+    const updateArticle = { inc_votes: "somethingelse" };
+    return request(app)
+      .patch(`/api/articles/1`)
+      .send(updateArticle)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.message).toBe("Bad request");
+      });
+  });
+
+  test("status: 400, invalid/bad path", () => {
+    return request(app)
+      .patch(`/api/articles/banana`)
+      .send({ inc_votes: 5 })
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.message).toBe("Bad request");
+      });
+  });
+});
