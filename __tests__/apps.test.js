@@ -12,7 +12,7 @@ afterAll(() => {
   return db.end();
 });
 
-describe("Get /api/topics", () => {
+describe("1. Get /api/topics", () => {
   test("status:200, responds with an array of topic objects", () => {
     return request(app)
       .get("/api/topics")
@@ -29,6 +29,45 @@ describe("Get /api/topics", () => {
             })
           );
         });
+      });
+  });
+});
+describe("2. GET /api/articles/:article_id", () => {
+  test("status:200 ,responds with an article object with thier properties", () => {
+    return request(app)
+      .get("/api/articles/2")
+      .expect(200)
+      .then(({ body }) => {
+        const { article } = body;
+
+        expect(article).toBeInstanceOf(Object);
+        expect(article).toEqual(
+          expect.objectContaining({
+            article_id: expect.any(Number),
+            title: expect.any(String),
+            topic: expect.any(String),
+            author: expect.any(String),
+            body: expect.any(String),
+            created_at: expect.any(String),
+            votes: expect.any(Number),
+          })
+        );
+      });
+  });
+  test("status:400, bad request if id is invalid", () => {
+    return request(app)
+      .get("/api/articles/elephant")
+      .expect(400)
+      .then((response) => {
+        expect(response.body.message).toBe("Bad request");
+      });
+  });
+  test("status:404, bad request if id is invalid", () => {
+    return request(app)
+      .get("/api/articles/700")
+      .expect(404)
+      .then((response) => {
+        expect(response.body.message).toBe("Not found!");
       });
   });
 });
