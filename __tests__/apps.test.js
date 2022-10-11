@@ -78,6 +78,28 @@ describe("2. GET /api/articles/:article_id", () => {
         expect(response.body.message).toBe("Not found!");
       });
   });
+  test("status:200, returns an object with an array of articles with comment_count added", () => {
+    return request(app)
+      .get("/api/articles/1")
+      .expect(200)
+      .then(({ body }) => {
+        const { article } = body;
+        expect(article).toBeInstanceOf(Object);
+        expect(article).toEqual(
+          expect.objectContaining({
+            article_id: expect.any(Number),
+            title: expect.any(String),
+            topic: expect.any(String),
+            author: expect.any(String),
+            body: expect.any(String),
+            created_at: expect.any(String),
+            votes: expect.any(Number),
+            comment_count: expect.any(Number),
+          })
+        );
+        expect(body.article.comment_count).toBe(11);
+      });
+  });
 });
 describe("3. GET /api/users", () => {
   test("status:200, returns an array of user objects", () => {
