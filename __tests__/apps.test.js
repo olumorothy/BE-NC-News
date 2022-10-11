@@ -31,6 +31,14 @@ describe("1. Get /api/topics", () => {
         });
       });
   });
+  test("status :404 , get api/topicss, not found ", () => {
+    return request(app)
+      .get("/api/topicss")
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Not found");
+      });
+  });
 });
 describe("2. GET /api/articles/:article_id", () => {
   test("status:200 ,responds with an article object with thier properties", () => {
@@ -68,6 +76,36 @@ describe("2. GET /api/articles/:article_id", () => {
       .expect(404)
       .then((response) => {
         expect(response.body.message).toBe("Not found!");
+      });
+  });
+});
+describe("3. GET /api/users", () => {
+  test("status:200, returns an array of user objects", () => {
+    return request(app)
+      .get("/api/users")
+      .expect(200)
+      .then(({ body }) => {
+        const { users } = body;
+        expect(users).toBeInstanceOf(Array);
+        expect(users).toHaveLength(4);
+        users.forEach((user) => {
+          expect(user).toEqual(
+            expect.objectContaining({
+              username: expect.any(String),
+              name: expect.any(String),
+              avatar_url: expect.any(String),
+            })
+          );
+        });
+      });
+  });
+
+  test("status :404 , get api/user, not found ", () => {
+    return request(app)
+      .get("/api/user")
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Not found");
       });
   });
 });
