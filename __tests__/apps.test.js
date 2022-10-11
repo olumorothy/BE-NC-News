@@ -39,7 +39,7 @@ describe("2. GET /api/articles/:article_id", () => {
       .expect(200)
       .then(({ body }) => {
         const { article } = body;
-        //console.log(article);
+
         expect(article).toBeInstanceOf(Object);
         expect(article).toEqual(
           expect.objectContaining({
@@ -54,7 +54,15 @@ describe("2. GET /api/articles/:article_id", () => {
         );
       });
   });
-  test("status:404, returns 404 when passed incorrect id", () => {
+  test("status:400, bad request if id is invalid", () => {
+    return request(app)
+      .get("/api/articles/elephant")
+      .expect(400)
+      .then((response) => {
+        expect(response.body.message).toBe("Bad request");
+      });
+  });
+  test("status:404, bad request if id is invalid", () => {
     return request(app)
       .get("/api/articles/700")
       .expect(404)
