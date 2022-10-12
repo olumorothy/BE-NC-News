@@ -42,4 +42,44 @@ function updateArticleById(article_id, inc_votes) {
   }
 }
 
-module.exports = { fetchArticleById, updateArticleById };
+function fetchAllArticles(sort_by) {
+  const validSortValues = ["created_at", "topic"];
+
+  baseQuery = `SELECT articles.* ,COUNT (comments.article_id) ::INT AS comment_count
+  FROM articles
+  LEFT JOIN comments ON comments.article_id = articles.article_id
+  WHERE articles.article_id = comments.article_id
+  GROUP BY articles.article_id `;
+
+  if (!sort_by) {
+    return db.query(`SELECT * FROM articles`).then(({ rows }) => {
+      return rows;
+    });
+  } else {
+    if (!validSortValues.includes(sort_by)) {
+      return Promise.reject({
+        status: 400,
+        msg: "Invalid sort value provided",
+      });
+    }
+    baseQuery += `ORDER BY ${sort_by} DESC`;
+  }
+  return db.query(baseQuery).then(({ rows }) => {
+    return rows;
+  });
+
+  // if (sort_by) {
+  //   if (!validSortValues.includes(sort_by)) {
+  //     return Promise.reject({
+  //       status: 400,
+  //       msg: "Invalid sort value provided",
+  //     });
+  //   }
+  //   baseQuery += `ORDER BY ${sort_by} DESC`;
+  // }
+  // return db.query(baseQuery).then(({ rows }) => {
+  //   return rows;
+  // });
+}
+
+module.exports = { fetchArticleById, updateArticleById, fetchAllArticles };

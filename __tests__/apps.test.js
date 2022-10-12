@@ -1,4 +1,5 @@
 const app = require("../apps.js");
+require("jest-sorted");
 const request = require("supertest");
 const db = require("../db/connection");
 const seed = require("../db/seeds/seed");
@@ -40,6 +41,7 @@ describe("1. Get /api/topics", () => {
       });
   });
 });
+
 describe("2. GET /api/articles/:article_id", () => {
   test("status:200 ,responds with an article object with thier properties", () => {
     return request(app)
@@ -192,6 +194,66 @@ describe("4. PATCH /api/articles/:article_id", () => {
       .expect(400)
       .then(({ body }) => {
         expect(body.message).toBe("Bad request");
+      });
+  });
+});
+
+describe("5. GET /api/articles", () => {
+  test("status:200, returns all the articles if query is omitted", () => {
+    return request(app)
+      .get(`/api/articles`)
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.articles).toBeInstanceOf(Array);
+        expect(body.articles).toHaveLength(12);
+        let articles = body.articles;
+        articles.forEach((article) => {
+          expect(article).toEqual(
+            expect.objectContaining({
+              author: expect.any(String),
+              title: expect.any(String),
+              article_id: expect.any(Number),
+              topic: expect.any(String),
+              created_at: expect.any(String),
+              votes: expect.any(Number),
+            })
+          );
+        });
+      });
+  });
+  test("status:200, articles are sorted by date in descending order by default", () => {
+    return request(app)
+      .get("/api/articles?sort_by=created_at")
+      .expect(200)
+      .then(({ body }) => {
+        const { articles } = body;
+        expect(articles).toBeSortedBy("created_at", { descending: true });
+      });
+  });
+  test("status:200, articles are sorted by topic in descending order", () => {
+    return request(app)
+      .get("/api/articles?sort_by=topic")
+      .expect(200)
+      .then(({ body }) => {
+        const { articles } = body;
+        expect(articles).toBeSortedBy("topic", { descending: true });
+      });
+  });
+
+  test("status:400, Invalid sort query value", () => {
+    return request(app)
+      .get("/api/articles?sort_by=anotherColumn")
+      .expect(400)
+      .then((response) => {
+        expect(response.body.message).toBe("Invalid sort value provided");
+      });
+  });
+  test("status :404 , return not found when a bad path is provided", () => {
+    return request(app)
+      .get("/api/articlesss")
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Not found");
       });
   });
 });
