@@ -1,4 +1,5 @@
 const app = require("../apps.js");
+require("jest-sorted");
 const request = require("supertest");
 const db = require("../db/connection");
 const seed = require("../db/seeds/seed");
@@ -40,6 +41,7 @@ describe("1. Get /api/topics", () => {
       });
   });
 });
+
 describe("2. GET /api/articles/:article_id", () => {
   test("status:200 ,responds with an article object with thier properties", () => {
     return request(app)
@@ -55,7 +57,6 @@ describe("2. GET /api/articles/:article_id", () => {
             title: expect.any(String),
             topic: expect.any(String),
             author: expect.any(String),
-            body: expect.any(String),
             created_at: expect.any(String),
             votes: expect.any(Number),
           })
@@ -192,6 +193,89 @@ describe("4. PATCH /api/articles/:article_id", () => {
       .expect(400)
       .then(({ body }) => {
         expect(body.message).toBe("Bad request");
+      });
+  });
+});
+
+describe("5. GET /api/articles", () => {
+  test("status:200, returns all the articles sorted by date in descending order by default", () => {
+    return request(app)
+      .get(`/api/articles`)
+      .expect(200)
+      .then(({ body }) => {
+        const { articles } = body;
+        expect(articles).toBeInstanceOf(Array);
+        expect(articles).toHaveLength(12);
+        expect(articles).toBeSortedBy("created_at", { descending: true });
+        articles.forEach((article) => {
+          expect(article).toEqual(
+            expect.objectContaining({
+              author: expect.any(String),
+              title: expect.any(String),
+              article_id: expect.any(Number),
+              topic: expect.any(String),
+              created_at: expect.any(String),
+              votes: expect.any(Number),
+              comment_count: expect.any(Number),
+            })
+          );
+        });
+      });
+  });
+  test("status:200, accepts a topic as a query and returns articles of only that topic", () => {
+    return request(app)
+      .get("/api/articles?topic=cats")
+      .expect(200)
+      .then(({ body }) => {
+        const { articles } = body;
+        expect(articles[0]).toEqual(
+          expect.objectContaining({
+            article_id: 5,
+            title: "UNCOVERED: catspiracy to bring down democracy",
+            author: "rogersop",
+            created_at: "2020-08-03T13:14:00.000Z",
+            body: "Bastet walks amongst us, and the cats are taking arms!",
+            votes: 0,
+            topic: "cats",
+            comment_count: 2,
+          })
+        );
+      });
+  });
+  test("status:200, articles are sorted by date in descending order by default", () => {
+    return request(app)
+      .get("/api/articles")
+      .expect(200)
+      .then(({ body }) => {
+        const { articles } = body;
+        expect(articles).toBeSortedBy("created_at", { descending: true });
+      });
+  });
+  test("Responds with status 400 if given an invalid topic", () => {
+    return request(app)
+      .get("/api/articles?topic=calendar")
+      .expect(400)
+      .then(({ body }) => {
+        const { message } = body;
+        expect(message).toBe("Invalid Topic");
+      });
+  });
+  test("Responds with status 400 if given an invalid sort category", () => {
+    return request(app)
+      .get("/api/articles?sort_by=size")
+      .expect(400)
+      .then(({ body }) => {
+        const { message } = body;
+        expect(message).toBe("Invalid sort value");
+      });
+  });
+  test("Responds with status 200 if given a valid topic with no related articles", () => {
+    return request(app)
+      .get("/api/articles?topic=paper")
+      .expect(200)
+      .then(({ body }) => {
+        const { articles } = body;
+        expect(articles).toHaveLength(0);
       });
   });
 });
