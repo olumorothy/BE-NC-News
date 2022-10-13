@@ -42,11 +42,22 @@ function updateArticleById(article_id, inc_votes) {
   }
 }
 
-function fetchAllArticles(topic, sort_by = "created_at") {
-  const validSortValues = ["topic", "created_at"];
+function fetchAllArticles(topic, sort_by = "created_at", order = "DESC") {
+  const validSortValues = [
+    "topic",
+    "created_at",
+    "title",
+    "author",
+    "body",
+    "votes",
+  ];
+  const validOrders = ["DESC", "ASC"];
 
   if (!validSortValues.includes(sort_by)) {
     return Promise.reject({ status: 400, msg: "Invalid sort value" });
+  }
+  if (!validOrders.includes(order.toUpperCase())) {
+    return Promise.reject({ status: 400, msg: "Invalid order value" });
   }
 
   baseQuery = `SELECT articles.* ,COUNT (comment_id) ::INT AS comment_count
@@ -57,10 +68,10 @@ function fetchAllArticles(topic, sort_by = "created_at") {
   if (topic !== undefined) {
     baseQuery += `WHERE articles.topic = $1
     GROUP BY articles.article_id
-    ORDER BY ${sort_by} DESC`;
+    ORDER BY ${sort_by} ${order}`;
   } else {
     baseQuery += `GROUP BY articles.article_id
-    ORDER BY ${sort_by} DESC`;
+    ORDER BY ${sort_by} ${order}`;
   }
 
   if (topic) {
