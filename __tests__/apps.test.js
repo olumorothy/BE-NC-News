@@ -4,6 +4,7 @@ const request = require("supertest");
 const db = require("../db/connection");
 const seed = require("../db/seeds/seed");
 const testData = require("../db/data/test-data");
+const endpoints = require("../endpoints.json");
 
 beforeEach(() => {
   //seeding the db with the test data
@@ -418,6 +419,17 @@ describe("8 DELETE /api/comments/:comment_id", () => {
       .expect(400)
       .then((response) => {
         expect(response.body.message).toBe("Bad request");
+      });
+  });
+});
+
+describe("9. GET /api", () => {
+  test("status:200, responds with JSON describing all the available endoints", () => {
+    return request(app)
+      .get("/api/")
+      .expect(200)
+      .then((response) => {
+        expect(response.body).toEqual({ endpoints });
       });
   });
 });
