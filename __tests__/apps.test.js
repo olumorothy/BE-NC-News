@@ -400,6 +400,9 @@ describe("7 POST /api/articles/:article_id/comments", () => {
 });
 
 describe("8 DELETE /api/comments/:comment_id", () => {
+  test("status:204, deletes the given comment by the comment_id respond withh no content", () => {
+    return request(app).delete("/api/comments/3").expect(204);
+  });
   test("status:404, returns 404 not found if a valid but not present comment_id is specified", () => {
     return request(app)
       .delete("/api/comments/908")
@@ -408,9 +411,7 @@ describe("8 DELETE /api/comments/:comment_id", () => {
         expect(response.body.message).toBe("Not found");
       });
   });
-  test("status:204, deletes the given comment by the comment_id respond withh no content", () => {
-    return request(app).delete("/api/comments/3").expect(204);
-  });
+
   test("status 400: responds with bad request when an invalid id is specified", () => {
     return request(app)
       .delete("/api/comments/one")
