@@ -320,3 +320,64 @@ describe("6.  GET /api/articles/:article_id/comments", () => {
       });
   });
 });
+
+describe("7 POST /api/articles/:article_id/comments", () => {
+  test("status:201, responds with the newly posted comments", () => {
+    const newComment = {
+      username: "butter_bridge",
+      body: "I hope its worth the hype",
+    };
+    return request(app)
+      .post("/api/articles/1/comments")
+      .send(newComment)
+      .expect(201)
+      .then(({ body }) => {
+        expect(body.comment.author).toBe("butter_bridge");
+        expect(body.comment.body).toBe("I hope its worth the hype");
+        expect(body.comment).toEqual(
+          expect.objectContaining({
+            comment_id: expect.any(Number),
+            votes: expect.any(Number),
+            created_at: expect.any(String),
+            author: expect.any(String),
+            body: expect.any(String),
+          })
+        );
+      });
+  });
+  test("status:400,Bad request when an empty/missing data is sent", () => {
+    return request(app)
+      .post("/api/articles/1/comments")
+      .send({ username: "butter_bridge" })
+      .expect(400)
+      .then((response) => {
+        expect(response.body.message).toBe("Bad request");
+      });
+  });
+  test("status:400, Bad request when an invalid article id is provided", () => {
+    const newComment = {
+      username: "butter_bridge",
+      body: "I hope its worth the hype",
+    };
+    return request(app)
+      .post("/api/articles/newarticle/comments")
+      .send(newComment)
+      .expect(400)
+      .then((response) => {
+        expect(response.body.message).toBe("Bad request");
+      });
+  });
+  test("status 404, responds with not found error if id is valid but not found", () => {
+    const newComment = {
+      username: "butter_bridge",
+      body: "I hope its worth the hype",
+    };
+    return request(app)
+      .post("/api/articles/100/comments")
+      .send(newComment)
+      .expect(404)
+      .then((response) => {
+        expect(response.body.message).toBe("Not found!");
+      });
+  });
+});
