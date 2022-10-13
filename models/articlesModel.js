@@ -42,44 +42,36 @@ function updateArticleById(article_id, inc_votes) {
   }
 }
 
-function fetchAllArticles(sort_by) {
-  const validSortValues = ["created_at", "topic"];
+function fetchAllArticles(topic, sort_by = "created_at") {
+  const validSortValues = ["topic", "created_at"];
 
-  baseQuery = `SELECT articles.* ,COUNT (comments.article_id) ::INT AS comment_count
+  if (!validSortValues.includes(sort_by)) {
+    return Promise.reject({ status: 400, msg: "Invalid sort value" });
+  }
+
+  baseQuery = `SELECT articles.* ,COUNT (comment_id) ::INT AS comment_count
   FROM articles
-  LEFT JOIN comments ON comments.article_id = articles.article_id
-  WHERE articles.article_id = comments.article_id
-  GROUP BY articles.article_id `;
+  LEFT JOIN comments
+  ON articles.article_id=comments.article_id `;
 
-  if (!sort_by) {
-    return db.query(`SELECT * FROM articles`).then(({ rows }) => {
-      return rows;
+  if (topic !== undefined) {
+    baseQuery += `WHERE articles.topic = $1
+    GROUP BY articles.article_id
+    ORDER BY ${sort_by} DESC`;
+  } else {
+    baseQuery += `GROUP BY articles.article_id
+    ORDER BY ${sort_by} DESC`;
+  }
+
+  if (topic) {
+    return db.query(baseQuery, [topic]).then(({ rows: artcles }) => {
+      return artcles;
     });
   } else {
-    if (!validSortValues.includes(sort_by)) {
-      return Promise.reject({
-        status: 400,
-        msg: "Invalid sort value provided",
-      });
-    }
-    baseQuery += `ORDER BY ${sort_by} DESC`;
+    return db.query(baseQuery).then(({ rows: articles }) => {
+      return articles;
+    });
   }
-  return db.query(baseQuery).then(({ rows }) => {
-    return rows;
-  });
-
-  // if (sort_by) {
-  //   if (!validSortValues.includes(sort_by)) {
-  //     return Promise.reject({
-  //       status: 400,
-  //       msg: "Invalid sort value provided",
-  //     });
-  //   }
-  //   baseQuery += `ORDER BY ${sort_by} DESC`;
-  // }
-  // return db.query(baseQuery).then(({ rows }) => {
-  //   return rows;
-  // });
 }
 
 module.exports = { fetchArticleById, updateArticleById, fetchAllArticles };
