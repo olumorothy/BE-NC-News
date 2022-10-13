@@ -332,6 +332,8 @@ describe("7 POST /api/articles/:article_id/comments", () => {
       .send(newComment)
       .expect(201)
       .then(({ body }) => {
+        expect(body.comment.author).toBe("butter_bridge");
+        expect(body.comment.body).toBe("I hope its worth the hype");
         expect(body.comment).toEqual(
           expect.objectContaining({
             comment_id: expect.any(Number),
