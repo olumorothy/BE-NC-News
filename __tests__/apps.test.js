@@ -279,3 +279,43 @@ describe("5. GET /api/articles", () => {
       });
   });
 });
+
+describe("6.  GET /api/articles/:article_id/comments", () => {
+  test("status:200, responds with an array of comments for the given id with the most recent first", () => {
+    return request(app)
+      .get("/api/articles/9/comments")
+      .expect(200)
+      .then(({ body }) => {
+        const { comments } = body;
+        expect(comments).toBeInstanceOf(Array);
+        comments.forEach((comment) => {
+          expect(comment).toEqual(
+            expect.objectContaining({
+              comment_id: expect.any(Number),
+              author: expect.any(String),
+              body: expect.any(String),
+              created_at: expect.any(String),
+              votes: expect.any(Number),
+            })
+          );
+          expect(comments).toBeSortedBy("created_at", { descending: true });
+        });
+      });
+  });
+  test("status:404, responds with not found error if id is valid but not found ", () => {
+    return request(app)
+      .get("/api/articles/900/comments")
+      .expect(404)
+      .then((response) => {
+        expect(response.body.message).toBe("Not found!");
+      });
+  });
+  test("status:400, responds with bad request if an invalid id is sent", () => {
+    return request(app)
+      .get("/api/articles/banana/comments")
+      .expect(400)
+      .then((response) => {
+        expect(response.body.message).toBe("Bad request");
+      });
+  });
+});
