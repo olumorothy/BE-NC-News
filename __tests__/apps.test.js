@@ -278,6 +278,23 @@ describe("5. GET /api/articles", () => {
         expect(articles).toHaveLength(0);
       });
   });
+  test("status:200, articles are ordered in ascending order when specified", () => {
+    return request(app)
+      .get("/api/articles?order=asc")
+      .expect(200)
+      .then(({ body }) => {
+        const { articles } = body;
+        expect(articles).toBeSortedBy("created_at", { ascending: true });
+      });
+  });
+  test("status:400, returns invalid order value when an invalid order value is specified", () => {
+    return request(app)
+      .get("/api/articles?order=max")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.message).toBe("Invalid order value");
+      });
+  });
 });
 
 describe("6.  GET /api/articles/:article_id/comments", () => {

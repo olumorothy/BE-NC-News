@@ -31,9 +31,9 @@ function patchArticleById(req, res, next) {
 }
 
 function getAllArticles(req, res, next) {
-  const { sort_by, topic } = req.query;
+  const { sort_by, topic, order } = req.query;
 
-  const promises = [fetchAllArticles(topic, sort_by)];
+  const promises = [fetchAllArticles(topic, sort_by, order)];
 
   if (topic) {
     promises.push(fetchAllTopics());
