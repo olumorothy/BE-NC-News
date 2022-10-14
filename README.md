@@ -5,7 +5,7 @@ These instructions will get you a copy of the project up and running on your loc
 ## Background
 
 A RESTful API built using node.js, express.js and postgresSQL. Gives access to databases containing articles, comments, topics and users.
-This app is hosted on heroku at https://earlynews.herokuapp.com/api
+This backend server is hosted on heroku at https://earlynews.herokuapp.com/api
 
 \*\* Note: To run the project locally you must have node and psql installed
 
@@ -84,5 +84,5 @@ The API contains several endpoints such as:
 
 - DELETE /api/comments/:comment_id --> deletes the given comment by "comment_id"
 
-GET /api --> JSON describing all the available endpoints on your API
+- GET /api --> JSON describing all the available endpoints on your API
 ```
