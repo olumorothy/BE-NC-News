@@ -1,4 +1,4 @@
-const fetchAllUsers = require("../models/usersModel");
+const { fetchAllUsers, fetchUsersByUsername } = require("../models/usersModel");
 
 function getAllUsers(req, res, next) {
   fetchAllUsers()
@@ -10,4 +10,15 @@ function getAllUsers(req, res, next) {
     });
 }
 
-module.exports = getAllUsers;
+function getUserByUsername(req, res, next) {
+  const { username } = req.params;
+  fetchUsersByUsername(username)
+    .then((user) => {
+      res.status(200).send({ user });
+    })
+    .catch((err) => {
+      next(err);
+    });
+}
+
+module.exports = { getAllUsers, getUserByUsername };

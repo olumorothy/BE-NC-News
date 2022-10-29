@@ -72,7 +72,7 @@ describe("2. GET /api/articles/:article_id", () => {
         expect(response.body.message).toBe("Bad request");
       });
   });
-  test("status:404, bad request if id is invalid", () => {
+  test("status:404, bad request if id is valid but not found", () => {
     return request(app)
       .get("/api/articles/700")
       .expect(404)
@@ -430,6 +430,31 @@ describe("9. GET /api", () => {
       .expect(200)
       .then((response) => {
         expect(response.body).toEqual({ endpoints });
+      });
+  });
+});
+
+describe.only("GET /api/users/:username", () => {
+  it("status:200, responds with a user object with thier properties", () => {
+    return request(app)
+      .get("/api/users/butter_bridge")
+      .expect(200)
+      .then(({ body }) => {
+        const { user } = body;
+        expect(user).toEqual({
+          username: "butter_bridge",
+          name: "jonny",
+          avatar_url:
+            "https://www.healthytherapies.com/wp-content/uploads/2016/06/Lime3.jpg",
+        });
+      });
+  });
+  it("status:404, responds with user not found when an invalid user is passes", () => {
+    return request(app)
+      .get("/api/users/moroti")
+      .expect(404)
+      .then((response) => {
+        expect(response.body.message).toBe("Username Not found");
       });
   });
 });
