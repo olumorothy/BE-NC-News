@@ -426,7 +426,7 @@ describe("8 DELETE /api/comments/:comment_id", () => {
 describe("9. GET /api", () => {
   test("status:200, responds with JSON describing all the available endoints", () => {
     return request(app)
-      .get("/api/")
+      .get("/api")
       .expect(200)
       .then((response) => {
         expect(response.body).toEqual({ endpoints });
