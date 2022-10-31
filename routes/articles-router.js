@@ -16,6 +16,7 @@ articlesRouter
   .route("/:article_id")
   .get(getArticlesById)
   .patch(patchArticleById);
+articlesRouter.route("/articles");
 
 articlesRouter
   .route("/:article_id/comments")
