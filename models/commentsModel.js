@@ -47,4 +47,30 @@ function removeCommentById(comment_id) {
     });
 }
 
-module.exports = { fetchCommentsByArticleId, insertComment, removeCommentById };
+function updateCommentById(comment_id, inc_votes) {
+  if (!inc_votes) {
+    return Promise.reject({
+      status: 400,
+      msg: "Bad request, nothing to update",
+    });
+  }
+  return db
+    .query(
+      `UPDATE comments SET votes = votes + $2 
+  WHERE comment_id = $1 RETURNING *`,
+      [comment_id, inc_votes]
+    )
+    .then(({ rows }) => {
+      if (rows.length === 0) {
+        return Promise.reject({ status: 404, msg: "Invalid comment Id" });
+      }
+      return rows[0];
+    });
+}
+
+module.exports = {
+  fetchCommentsByArticleId,
+  insertComment,
+  removeCommentById,
+  updateCommentById,
+};

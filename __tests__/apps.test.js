@@ -434,7 +434,7 @@ describe("9. GET /api", () => {
   });
 });
 
-describe.only("GET /api/users/:username", () => {
+describe("10. GET /api/users/:username", () => {
   it("status:200, responds with a user object with thier properties", () => {
     return request(app)
       .get("/api/users/butter_bridge")
@@ -458,3 +458,73 @@ describe.only("GET /api/users/:username", () => {
       });
   });
 });
+
+describe("11. Patch /api/comments/:comment_id", () => {
+  test("status 200, accepts a new comment vote and responds with the updated comment", () => {
+    const updatedVotes = { inc_votes: 1 };
+
+    return request(app)
+      .patch("/api/comments/1")
+      .send(updatedVotes)
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.comments).toEqual({
+          comment_id: 1,
+          body: "Oh, I've got compassion running out of my nose, pal! I'm the Sultan of Sentiment!",
+          votes: 17,
+          author: "butter_bridge",
+          article_id: 9,
+          created_at: "2020-04-06T12:17:00.000Z",
+        });
+        expect(body.comments.votes).toBe(17);
+      });
+  });
+  test("status:404, not found if Id is valid but not found", () => {
+    const updatedVotes = { inc_votes: 1 };
+    return request(app)
+      .patch("/api/comments/704")
+      .send(updatedVotes)
+      .expect(404)
+      .then((response) => {
+        expect(response.body.message).toBe("Invalid comment Id");
+      });
+  });
+  test("status:400, bad request if an empty object is sent", () => {
+    const updatedVotes = {};
+    return request(app)
+      .patch("/api/comments/1")
+      .send(updatedVotes)
+      .expect(400)
+      .then((response) => {
+        expect(response.body.message).toBe("Bad request, nothing to update");
+      });
+  });
+});
+
+// describe("12. Post /api/articles", () => {
+//   test("status:201, responds with the newly posted article", () => {
+//     const newArticle = {
+//       author: "icellusedkars",
+//       topic: "mitch",
+//       title: "New PM has been elected",
+//       body: "Who doesnt like a change of power",
+//     };
+//     return request(app)
+//       .post("/api/articles")
+//       .send(newArticle)
+//       .expect(201)
+//       .then(({ body }) => {
+//         expect(Object.keys({ body })).toHaveLength(8);
+//         expect({ body }).toMatchObject({
+//           article_id: 13,
+//           votes: 0,
+//           created_at: expect.any(String),
+//           comment_count: 0,
+//           author: "icellusedkars",
+//           title: "New PM has been elected",
+//           body: "Who doesnt like a change of power",
+//           topic: "mitch",
+//         });
+//       });
+//   });
+// });
