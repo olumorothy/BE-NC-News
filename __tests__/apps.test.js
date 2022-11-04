@@ -198,7 +198,7 @@ describe("4. PATCH /api/articles/:article_id", () => {
   });
 });
 
-describe("5. GET /api/articles", () => {
+describe.only("5. GET /api/articles", () => {
   test("status:200, returns all the articles sorted by date in descending order by default", () => {
     return request(app)
       .get(`/api/articles`)
@@ -243,6 +243,7 @@ describe("5. GET /api/articles", () => {
         );
       });
   });
+
   test("status:200, articles are sorted by date in descending order by default", () => {
     return request(app)
       .get("/api/articles")
@@ -250,6 +251,14 @@ describe("5. GET /api/articles", () => {
       .then(({ body }) => {
         const { articles } = body;
         expect(articles).toBeSortedBy("created_at", { descending: true });
+      });
+  });
+  test("status:200, return an array of articles when passed two(2) queries", () => {
+    return request(app)
+      .get("/api/articles?sort_by=author&order=asc")
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.articles).toBeSortedBy("author", { descending: false });
       });
   });
   test("Responds with status 400 if given an invalid topic", () => {
